@@ -21,7 +21,7 @@ import Adapter from 'firenze/lib/Adapter';
 //
 // var db = new Database({
 //   adapter: SqliteAdapter,
-//   database: 'my_database.db'
+//   filename: 'my_database.db'
 // });
 // ```
 //
