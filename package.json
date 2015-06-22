@@ -1,0 +1,52 @@
+{
+  "name": "firenze-adapter-sqlite",
+  "version": "0.1.0",
+  "description": "SQLite adapter for firenze.js ORM",
+  "main": "index.js",
+  "scripts": {
+    "babel": "babel src --out-dir lib",
+    "babel:watch": "babel --watch src --out-dir lib",
+    "lint": "eslint src",
+    "mocha": "mocha $(find lib/test/cases -name '*.js')",
+    "test": "run-scripts lint babel mocha",
+    "doctoc": "doctoc README.md --github --title '# Contents'",
+    "docume": "docume README.md",
+    "docs": "npm run docume && npm run doctoc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexweber/firenze-adapter-sqlite.git"
+  },
+  "keywords": [
+    "firenze",
+    "firenze-adapter",
+    "firenze-plugin",
+    "orm",
+    "sqlite",
+    "database",
+    "adapter"
+  ],
+  "author": "Alex Weber",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alexweber/firenze-adapter-sqlite/issues"
+  },
+  "homepage": "https://github.com/alexweber/firenze-adapter-sqlite",
+  "dependencies": {
+    "firenze": "~0.1.3"
+  },
+  "peerDependencies": {
+    "firenze": "~0.1.3"
+  },
+  "devDependencies": {
+    "babel": "^5.1.10",
+    "babel-eslint": "^3.0.1",
+    "doctoc": "^0.13.0",
+    "docume": "^0.1.4",
+    "eslint": "^0.20.0",
+    "mocha": "^2.2.4",
+    "run-scripts": "^0.2.2",
+    "should": "^6.0.1",
+    "should-promised": "^0.2.1"
+  }
+}
