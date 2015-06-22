@@ -2,5 +2,5 @@ var Sqlite = require('../index');
 
 module.exports = {
   adapter: Sqlite,
-  filename: 'firenze.sqlite'
+  filename: './src/test/firenze.sqlite'
 };
