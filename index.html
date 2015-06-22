@@ -1,0 +1,341 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>firenze-adapter-sqlite by alexweber</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>firenze-adapter-sqlite</h1>
+        <p>SQLite adapter for firenze.js</p>
+
+        <p class="view"><a href="https://github.com/alexweber/firenze-adapter-sqlite">View the Project on GitHub <small>alexweber/firenze-adapter-sqlite</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/alexweber/firenze-adapter-sqlite/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/alexweber/firenze-adapter-sqlite/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/alexweber/firenze-adapter-sqlite">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="firenze-adapter-sqlite" class="anchor" href="#firenze-adapter-sqlite" aria-hidden="true"><span class="octicon octicon-link"></span></a>firenze-adapter-sqlite</h1>
+
+<p><a href="https://travis-ci.org/alexweber/firenze-adapter-sqlite"><img src="https://travis-ci.org/alexweber/firenze-adapter-sqlite.svg?branch=master" alt="Build Status"></a> <a href="https://coveralls.io/r/alexweber/firenze-adapter-sqlite"><img src="https://coveralls.io/repos/alexweber/firenze-adapter-sqlite/badge.svg" alt="Coverage Status"></a> <a href="https://www.npmjs.com/package/firenze-adapter-sqlite"><img src="https://img.shields.io/npm/v/firenze-adapter-sqlite.svg" alt="npm"></a> <a href="https://gitter.im/fahad19/firenze"><img src="https://img.shields.io/badge/gitter-join_chat_%E2%86%92-1dce73.svg" alt="Join the chat at https://gitter.im/fahad19/firenze"></a></p>
+
+<p>SQLite adapter for <a href="https://github.com/fahad19/firenze">firenze.js</a></p>
+
+<p>Install it with npm: <code>npm install --save firenze-adapter-sqlite</code></p>
+
+
+
+
+
+<h1>
+<a id="contents" class="anchor" href="#contents" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contents</h1>
+
+<ul>
+<li><a href="#install">Install</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#schema">Schema</a></li>
+<li>
+<a href="#finders">Finders</a>
+
+<ul>
+<li><a href="#first">first</a></li>
+<li><a href="#all">all</a></li>
+<li><a href="#list">list</a></li>
+<li><a href="#count">count</a></li>
+</ul>
+</li>
+<li>
+<a href="#complex-conditions">Complex conditions</a>
+
+<ul>
+<li><a href="#equals">equals</a></li>
+<li><a href="#in-list">in list</a></li>
+<li><a href="#comparisons">comparisons</a></li>
+<li><a href="#and">AND</a></li>
+<li><a href="#or">OR</a></li>
+<li><a href="#not">NOT</a></li>
+</ul>
+</li>
+<li><a href="#order">Order</a></li>
+<li><a href="#group">Group</a></li>
+<li><a href="#fields">Fields</a></li>
+<li><a href="#limit-pagination">Limit (pagination)</a></li>
+</ul>
+
+
+
+
+
+<h2>
+<a id="install" class="anchor" href="#install" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install</h2>
+
+<pre><code>$ npm install --save firenze-adapter-sqlite
+</code></pre>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>You aren't expected to deal with the Adapter directly. Just pass the adapter to Database config when you create an instance.</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> f <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>firenze<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> Database <span class="pl-k">=</span> f.Database;
+<span class="pl-k">var</span> SqliteAdapter <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>firenze-adapter-sqlite<span class="pl-pds">'</span></span>);
+
+<span class="pl-k">var</span> db <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Database</span>({
+  adapter<span class="pl-k">:</span> SqliteAdapter,
+  filename<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>my_database.sqlite<span class="pl-pds">'</span></span>
+});</pre></div>
+
+<h2>
+<a id="schema" class="anchor" href="#schema" aria-hidden="true"><span class="octicon octicon-link"></span></a>Schema</h2>
+
+<p>When defining a Model's schema, you need to pass option for each column's <code>type</code>.</p>
+
+<p>Here are the supported types from this adapter:</p>
+
+<ul>
+<li>increments</li>
+<li>integer</li>
+<li>bigInteger</li>
+<li>text</li>
+<li>string</li>
+<li>float</li>
+<li>decimal</li>
+<li>boolean</li>
+<li>date</li>
+<li>dateTime</li>
+<li>uuid</li>
+</ul>
+
+<p>Example:</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> Post <span class="pl-k">=</span> db.createModelClass({
+  schema<span class="pl-k">:</span> {
+    id<span class="pl-k">:</span> {
+      type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>increments<span class="pl-pds">'</span></span>
+    }
+  }
+});</pre></div>
+
+<h2>
+<a id="finders" class="anchor" href="#finders" aria-hidden="true"><span class="octicon octicon-link"></span></a>Finders</h2>
+
+<p>Examples below assumes you have an instance of Collection already:</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> posts <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">Posts</span>();</pre></div>
+
+<h3>
+<a id="first" class="anchor" href="#first" aria-hidden="true"><span class="octicon octicon-link"></span></a>first</h3>
+
+<p>Gives you the first matched result:</p>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>first<span class="pl-pds">'</span></span>, {
+  conditions<span class="pl-k">:</span> {
+    id<span class="pl-k">:</span> <span class="pl-c1">1</span>
+  }
+}).then(<span class="pl-k">function</span> (<span class="pl-smi">post</span>) {
+  <span class="pl-c">// post is now an instance of Post model</span>
+  <span class="pl-k">var</span> title <span class="pl-k">=</span> post.get(<span class="pl-s"><span class="pl-pds">'</span>title<span class="pl-pds">'</span></span>);
+});</pre></div>
+
+<h3>
+<a id="all" class="anchor" href="#all" aria-hidden="true"><span class="octicon octicon-link"></span></a>all</h3>
+
+<p>Gives you all matched results:</p>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>all<span class="pl-pds">'</span></span>, {
+  conditions<span class="pl-k">:</span> {
+    published<span class="pl-k">:</span> <span class="pl-c1">true</span>
+  }
+}).then(<span class="pl-k">function</span> (<span class="pl-smi">models</span>) {
+  models.forEach(<span class="pl-k">function</span> (<span class="pl-smi">model</span>) {
+    <span class="pl-k">var</span> title <span class="pl-k">=</span> model.get(<span class="pl-s"><span class="pl-pds">'</span>title<span class="pl-pds">'</span></span>);
+  });
+});</pre></div>
+
+<h3>
+<a id="list" class="anchor" href="#list" aria-hidden="true"><span class="octicon octicon-link"></span></a>list</h3>
+
+<p>Gives you a list of key/value paired object of matched results:</p>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>list<span class="pl-pds">'</span></span>, {
+  conditions<span class="pl-k">:</span> {},
+  fields<span class="pl-k">:</span> [
+    <span class="pl-s"><span class="pl-pds">'</span>id<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>title<span class="pl-pds">'</span></span>
+  ]
+}).then(<span class="pl-k">function</span> (<span class="pl-smi">list</span>) {
+  <span class="pl-c">// list is now:</span>
+  <span class="pl-c">//</span>
+  <span class="pl-c">// {</span>
+  <span class="pl-c">//   1: 'Hello World',</span>
+  <span class="pl-c">//   2: 'About'</span>
+  <span class="pl-c">// }</span>
+});</pre></div>
+
+<h3>
+<a id="count" class="anchor" href="#count" aria-hidden="true"><span class="octicon octicon-link"></span></a>count</h3>
+
+<p>Gives you the total count of matched results:</p>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>count<span class="pl-pds">'</span></span>).then(<span class="pl-k">function</span> (<span class="pl-smi">count</span>) {
+  <span class="pl-c">// count is an integer here</span>
+});</pre></div>
+
+<h2>
+<a id="complex-conditions" class="anchor" href="#complex-conditions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Complex conditions</h2>
+
+<h3>
+<a id="equals" class="anchor" href="#equals" aria-hidden="true"><span class="octicon octicon-link"></span></a>equals</h3>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>all<span class="pl-pds">'</span></span>, {
+  conditions<span class="pl-k">:</span> {
+    id<span class="pl-k">:</span> <span class="pl-c1">1</span>
+  }
+});</pre></div>
+
+<h3>
+<a id="in-list" class="anchor" href="#in-list" aria-hidden="true"><span class="octicon octicon-link"></span></a>in list</h3>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>all<span class="pl-pds">'</span></span>, {
+  conditions<span class="pl-k">:</span> {
+    id<span class="pl-k">:</span> [
+      <span class="pl-c1">1</span>,
+      <span class="pl-c1">2</span>,
+      <span class="pl-c1">3</span>
+    ]
+  }
+});</pre></div>
+
+<h3>
+<a id="comparisons" class="anchor" href="#comparisons" aria-hidden="true"><span class="octicon octicon-link"></span></a>comparisons</h3>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>all<span class="pl-pds">'</span></span>, {
+  conditions<span class="pl-k">:</span> {
+    <span class="pl-s"><span class="pl-pds">'</span>Post.rating &gt;<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-c1">3</span>
+  }
+})</pre></div>
+
+<p>Example comparisons that you can try:</p>
+
+<ul>
+<li>greater than <code>ModelAlias.field &gt;</code>
+</li>
+<li>greater than or equel to <code>ModelAlias.field &gt;=</code>
+</li>
+<li>less than <code>ModelAlias.field &lt;</code>
+</li>
+<li>less than or equal to <code>ModelAlias.field &lt;=</code>
+</li>
+<li>not equal to <code>ModelAlias.field !=</code>
+</li>
+</ul>
+
+<h3>
+<a id="and" class="anchor" href="#and" aria-hidden="true"><span class="octicon octicon-link"></span></a>AND</h3>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>all<span class="pl-pds">'</span></span>, {
+  conditions<span class="pl-k">:</span> {
+    AND<span class="pl-k">:</span> {
+      <span class="pl-s"><span class="pl-pds">'</span>Post.published<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-c1">1</span>
+    }
+  }
+});</pre></div>
+
+<h3>
+<a id="or" class="anchor" href="#or" aria-hidden="true"><span class="octicon octicon-link"></span></a>OR</h3>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>all<span class="pl-pds">'</span></span>, {
+  conditions<span class="pl-k">:</span> {
+    OR<span class="pl-k">:</span> {
+      <span class="pl-s"><span class="pl-pds">'</span>Post.published<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-c1">1</span>
+    }
+  }
+});</pre></div>
+
+<h3>
+<a id="not" class="anchor" href="#not" aria-hidden="true"><span class="octicon octicon-link"></span></a>NOT</h3>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>all<span class="pl-pds">'</span></span>, {
+  conditions<span class="pl-k">:</span> {
+    NOT<span class="pl-k">:</span> {
+      <span class="pl-s"><span class="pl-pds">'</span>Post.published<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-c1">1</span>
+    }
+  }
+});</pre></div>
+
+<h2>
+<a id="order" class="anchor" href="#order" aria-hidden="true"><span class="octicon octicon-link"></span></a>Order</h2>
+
+<p>For ordering results:</p>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>all<span class="pl-pds">'</span></span>, {
+  order<span class="pl-k">:</span> {
+    <span class="pl-s"><span class="pl-pds">'</span>Post.title<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>asc<span class="pl-pds">'</span></span>
+  }
+});</pre></div>
+
+<h2>
+<a id="group" class="anchor" href="#group" aria-hidden="true"><span class="octicon octicon-link"></span></a>Group</h2>
+
+<p>For grouping result set:</p>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>all<span class="pl-pds">'</span></span>, {
+  group<span class="pl-k">:</span> [
+    <span class="pl-s"><span class="pl-pds">'</span>column_name<span class="pl-pds">'</span></span>
+  ]
+});</pre></div>
+
+<h2>
+<a id="fields" class="anchor" href="#fields" aria-hidden="true"><span class="octicon octicon-link"></span></a>Fields</h2>
+
+<p>Select only a number of fields:</p>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>all<span class="pl-pds">'</span></span>, {
+  fields<span class="pl-k">:</span> [
+    <span class="pl-s"><span class="pl-pds">'</span>id<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>title<span class="pl-pds">'</span></span>
+  ]
+});</pre></div>
+
+<h2>
+<a id="limit-pagination" class="anchor" href="#limit-pagination" aria-hidden="true"><span class="octicon octicon-link"></span></a>Limit (pagination)</h2>
+
+<p>Limit number of results:</p>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>all<span class="pl-pds">'</span></span>, {
+  limit<span class="pl-k">:</span> <span class="pl-c1">10</span>
+});</pre></div>
+
+<p>If you want to go through paginated results:</p>
+
+<div class="highlight highlight-js"><pre>posts.<span class="pl-c1">find</span>(<span class="pl-s"><span class="pl-pds">'</span>all<span class="pl-pds">'</span></span>, {
+  limit<span class="pl-k">:</span> <span class="pl-c1">10</span>,
+  page<span class="pl-k">:</span> <span class="pl-c1">2</span>
+})</pre></div>
+
+
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/alexweber">alexweber</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
