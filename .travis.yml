@@ -1,0 +1,12 @@
+language: node_js
+
+before_script:
+  - mysql -e 'create database firenze;'
+
+node_js:
+  - '0.10'
+
+script: "npm run test"
+
+notifications:
+  email: false
