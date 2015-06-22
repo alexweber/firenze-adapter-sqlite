@@ -155,4 +155,15 @@ export default class Sqlite extends Adapter {
   // });
   // ```
   //
+  read(q) {
+    return q;
+  }
+
+  update(q, obj) {
+    return q.update(obj);
+  }
+
+  delete(q) {
+    return q.del();
+  }
 }
