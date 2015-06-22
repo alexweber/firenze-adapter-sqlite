@@ -166,4 +166,318 @@ export default class Sqlite extends Adapter {
   delete(q) {
     return q.del();
   }
+
+  dropTable(model) {
+    let connection = this.getConnection();
+    let table = model.collection().table;
+
+    return new P(function (resolve, reject) {
+      connection.schema.dropTableIfExists(table)
+        .then(function (response) {
+          return resolve(response);
+        })
+        .catch(function (error) {
+          reject(error);
+        });
+    });
+  }
+
+  createTable(model) {
+    let connection = this.getConnection();
+    let table = model.collection().table;
+
+    return new P(function (resolve, reject) {
+      connection.schema.createTable(table, function (t) {
+        _.each(model.schema, function (column, name) {
+          t[column.type](name);
+        });
+      })
+        .then(function (response) {
+          resolve(response);
+        })
+        .catch(function (error) {
+          reject(error);
+        });
+    });
+  }
+
+  populateTable(model, rows) {
+    let connection = this.getConnection();
+    let table = model.collection().table;
+
+    return new P(function (resolve, reject) {
+      connection(table).insert(rows)
+        .then(function (response) {
+          resolve(response);
+        })
+        .catch(function (error) {
+          reject(error);
+        });
+    });
+  }
+
+  query(collection, options = {}) {
+    let exp = collection.table;
+    let alias = collection.model().alias;
+    if ((_.isUndefined(options.alias) || options.alias) && alias) {
+      exp += ' as ' + alias;
+    }
+    let query = collection.getDatabase().getConnection()(exp);
+    query = this.queryOptions(query, options);
+    return query;
+  }
+
+  queryOptions(query, options) {
+    let apply = [
+      'Conditions',
+      'Fields',
+      'Count',
+      'Order',
+      'Group',
+      'Limit'
+    ];
+
+    apply.forEach((a) => {
+      this['query' + a](query, options);
+    });
+
+    return query;
+  }
+
+// ## Complex conditions
+//
+// ### equals
+//
+// ```js
+// posts.find('all', {
+//   conditions: {
+//     id: 1
+//   }
+// });
+// ```
+//
+// ### in list
+//
+// ```js
+// posts.find('all', {
+//   conditions: {
+//     id: [
+//       1,
+//       2,
+//       3
+//     ]
+//   }
+// });
+// ```
+//
+// ### comparisons
+//
+// ```js
+// posts.find('all', {
+//   conditions: {
+//     'Post.rating >': 3
+//   }
+// })
+// ```
+//
+// Example comparisons that you can try:
+//
+// * greater than `ModelAlias.field >`
+// * greater than or equel to `ModelAlias.field >=`
+// * less than `ModelAlias.field <`
+// * less than or equal to `ModelAlias.field <=`
+// * not equal to `ModelAlias.field !=`
+//
+// ### AND
+//
+// ```js
+// posts.find('all', {
+//   conditions: {
+//     AND: {
+//       'Post.published': 1
+//     }
+//   }
+// });
+// ```
+//
+// ### OR
+//
+// ```js
+// posts.find('all', {
+//   conditions: {
+//     OR: {
+//       'Post.published': 1
+//     }
+//   }
+// });
+// ```
+//
+// ### NOT
+//
+// ```js
+// posts.find('all', {
+//   conditions: {
+//     NOT: {
+//       'Post.published': 1
+//     }
+//   }
+// });
+// ```
+//
+  queryConditions(query, options = {}) {
+    let conditions = _.isObject(options.conditions) ? options.conditions : null;
+    let self = this;
+    _.each(conditions, function (v, k) {
+      k = _.trim(k);
+
+      if (k === 'AND') {
+        query.where(function () {
+          self.queryConditions(this, {
+            conditions: v
+          });
+        });
+      } else if (k === 'OR') {
+        query.orWhere(function () {
+          self.queryConditions(this, {
+            conditions: v
+          });
+        });
+      } else if (k === 'NOT') {
+        query.whereNot(function () {
+          self.queryConditions(this, {
+            conditions: v
+          });
+        });
+      } else if (_.includes(k, ' ')) {
+        let parts = k.split(' ');
+        let field = parts[0];
+        let operator = parts[1];
+
+        if (_.isNull(v) && _.includes(['!=', '<>'], operator)) {
+          query.whereNotNull(field);
+        } else if (_.isArray(v) && _.includes(['!='], operator)) {
+          query.whereNotIn(field, v);
+        } else {
+          query.where(field, operator, v);
+        }
+      } else {
+        if (_.isNull(v)) {
+          query.whereNull(k);
+        } else if (_.isArray(v)) {
+          query.whereIn(k, v);
+        } else {
+          query.where(k, v);
+        }
+      }
+    });
+
+    return query;
+  }
+
+// ## Order
+//
+// For ordering results:
+//
+// ```js
+// posts.find('all', {
+//   order: {
+//     'Post.title': 'asc'
+//   }
+// });
+// ```
+//
+  queryOrder(query, options = {}) {
+    let order = _.isObject(options.order) ? options.order : {};
+    _.each(order, function (v, k) {
+      query.orderBy(k, v);
+    });
+    return query;
+  }
+
+// ## Group
+//
+// For grouping result set:
+//
+// ```js
+// posts.find('all', {
+//   group: [
+//     'column_name'
+//   ]
+// });
+// ```
+//
+  queryGroup(query, options = {}) {
+    let group = _.isObject(options.group) ? options.group : [];
+    _.each(group, function (v) {
+      query.groupBy(v);
+    });
+    return query;
+  }
+
+// ## Fields
+//
+// Select only a number of fields:
+//
+// ```js
+// posts.find('all', {
+//   fields: [
+//     'id',
+//     'title'
+//   ]
+// });
+// ```
+//
+  queryFields(query, options = {}) {
+    let fields = _.isArray(options.fields) ? options.fields : [];
+    if (fields.length === 0) {
+      return query;
+    }
+
+    _.each(fields, function (v) {
+      query.select(v);
+    });
+    return query;
+  }
+
+// ## Limit (pagination)
+//
+// Limit number of results:
+//
+// ```js
+// posts.find('all', {
+//   limit: 10
+// });
+// ```
+//
+// If you want to go through paginated results:
+//
+// ```js
+// posts.find('all', {
+//   limit: 10,
+//   page: 2
+// })
+// ```
+//
+  queryLimit(query, options = {}) {
+    if (options.limit && options.page) {
+      let limit = parseInt(options.limit, 10);
+      let page = parseInt(options.page, 10);
+
+      query
+        .limit(limit)
+        .offset((page - 1) * limit);
+    } else if (options.limit) {
+      query.limit(parseInt(options.limit, 10));
+    }
+
+    return query;
+  }
+
+  queryCount(query, options = {}) {
+    if (options.count) {
+      query.count();
+    }
+
+    return query;
+  }
 }
