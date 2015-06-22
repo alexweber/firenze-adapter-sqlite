@@ -56,5 +56,18 @@ import Adapter from 'firenze/lib/Adapter';
 // ```
 //
 export default class Sqlite extends Adapter {
+  constructor(options) {
+    super(options);
 
+    this.options = options;
+
+    let config = {
+      client: 'sqlite3',
+      connection: {
+        filename: this.options.filename
+      }
+    };
+
+    this.knex = knex(config);
+  }
 }
