@@ -34,7 +34,7 @@
   "bugs": {
     "url": "https://github.com/alexweber/firenze-adapter-sqlite/issues"
   },
-  "homepage": "https://github.com/alexweber/firenze-adapter-sqlite",
+  "homepage": "http://alexweber.github.io/firenze-adapter-sqlite",
   "dependencies": {
     "firenze": "~0.1.3",
     "knex": "^0.8.6",
