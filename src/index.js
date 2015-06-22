@@ -70,4 +70,19 @@ export default class Sqlite extends Adapter {
 
     this.knex = knex(config);
   }
+
+  getConnection() {
+    return this.knex;
+  }
+
+  closeConnection(cb = null) {
+    if (!cb) {
+      cb = function () { };
+    }
+    return this.getConnection().destroy(cb);
+  }
+
+  create(q, obj) {
+    return q.insert(obj);
+  }
 }
