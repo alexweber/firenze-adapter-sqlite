@@ -41,7 +41,7 @@
     "sqlite3": "^3.0.8"
   },
   "peerDependencies": {
-    "firenze": "~0.1.3"
+    "firenze": "~0.1.4"
   },
   "devDependencies": {
     "babel": "^5.1.10",
@@ -50,7 +50,7 @@
     "doctoc": "^0.13.0",
     "docume": "^0.1.4",
     "eslint": "^0.20.0",
-    "firenze": "~0.1.3",
+    "firenze": "~0.1.4",
     "istanbul": "^0.3.15",
     "mocha": "^2.2.4",
     "run-scripts": "^0.2.2",
